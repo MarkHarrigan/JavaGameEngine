@@ -1,0 +1,77 @@
+#version 400 core
+
+in vec2 pass_textureCoords;
+in vec3 surfaceNormal;
+in vec3 toLightVector;
+in vec3 toCameraVector;
+
+out vec4 out_Color;
+
+uniform sampler2D textureSampler;
+uniform vec3 lightColour; // colour of the light
+// Now add a couple of uniform variables
+ uniform float shineDamper;
+ uniform float reflectivity;
+
+// Diffuse lighting just calculates how much light a surface
+// should get because of its orientation towards a light source.
+// Specular lighting relates to how shiny a material is and
+// can be added to the diffuse lighting to give a final value.
+
+void main(void){
+
+	// Normalise the size of the vectors so that the size of them 
+	// doesn't impact on the calculation
+	// This ensures that the length are both 1 but the direction
+	// remains the same
+
+	vec3 unitNormal = normalize(surfaceNormal);
+	vec3 unitLightVector = normalize(toLightVector);
+
+	// Dot product calculation
+	// The float is the representation of how bright
+	// the pixel should be
+	float nDot1 = dot(unitNormal, unitLightVector);
+	
+	// Make sure the result is between 0 and 1
+	// as sometimes the dot-product will return 
+	// values of less than 0 so we don't care
+	// about those
+	// The max() function takes either nDot1 or 1.
+	// If nDot1 < 0 then it will use 0 otherwise nDot1
+	float brightness = max(nDot1,0.2);
+	
+	// We then multiply this value by the lightColour 
+	// to get the final brightness value
+	vec3 diffuse = brightness * lightColour;
+	
+	// Now we need to normalise the vector to the camera
+	// so that the size of the vector is just one
+	vec3 unitVectorToCamera = normalize(toCameraVector);
+	
+	// Then create the vector in the direction from which the light
+	// is coming from, which is the opposite of the vector pointing
+	// towards the light.
+	vec3 lightDirection = -unitLightVector;
+	
+	// Create the reflected light vector
+	vec3 reflectedLightDirection = reflect(lightDirection, unitNormal);
+	
+	// Now we need to calculate the dot product to determine
+	// how much light is going into the camera
+	float specularFactor = dot(reflectedLightDirection, unitVectorToCamera);
+	// Then we need to ensure that the returned value is >= 0
+	specularFactor = max(specularFactor,0.0);
+	// Now apply the damping of the material by raising the specularFactor
+	// to the power of the damping value, which makes low values even lower
+	// but doesn't affect the higher values as much
+	float dampedFactor = pow(specularFactor,shineDamper);
+	// To get the final specular value we need to multiply it by the light colour
+	vec3 finalSpecular = dampedFactor * reflectivity * lightColour;
+	 
+	
+	// Add the specular value to the diffused lighting, after converting it to a 4D vector
+	// as out_Color is a 4D vector, not 3D, as it's an RGBA colour, not just RGB
+	out_Color = vec4(diffuse,1.0) * texture(textureSampler,pass_textureCoords) + vec4(finalSpecular,1.0); 
+
+}

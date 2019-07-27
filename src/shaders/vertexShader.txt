@@ -1,0 +1,48 @@
+#version 150
+
+in vec3 position;
+in vec2 textureCoords;
+in vec3 normal;
+
+// Out values are passed to FragmentShader
+out vec2 pass_textureCoords;
+out vec3 surfaceNormal;
+// Hold the out vector for the vertex to the light source
+out vec3 toLightVector;
+// Hold the out vector for the vertex to the camera
+out vec3 toCameraVector;
+
+// create a uniform variable
+uniform mat4 transformationMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 viewMatrix;
+uniform vec3 lightPosition; // holds position of the light
+
+void main(void){
+	
+	// The position will have changed if we've used a transformation on the model
+	// Multiply the position by the transformation matrix to get teh world poistion
+	
+	vec4 worldPosition = transformationMatrix * vec4(position,1.0);
+	gl_Position = projectionMatrix * viewMatrix * worldPosition;
+	pass_textureCoords = textureCoords;
+	
+	// surfaceNormal has to be converted to vec4 so that it 
+	// can be multiplied by the transformation matrix.
+	// That would normally return a 4d vector so we need to 
+	// 'swizzle' it to get the xyz values
+	surfaceNormal = (transformationMatrix * vec4(normal, 0.0)).xyz;
+	
+	// As we don't have the camera position in the shader code
+	// What we do have is the viewMatrix which contains the negative
+	// version of the camera position. We need to take the inverse
+	// of this matrix and apply this matrix to a 0,0,0 vector to convert
+	// it to a 4D vector. This will then be the camera's position.
+	// We can then get the vector from the vertex to the camera by
+	// substracting the vertices position from the camera position
+	toCameraVector = (inverse(viewMatrix) * vec4(0.0,0.0,0.0,1.0)).xyz - worldPosition.xyz;
+	
+	// Get the difference between the light position and the vertex on the model.
+	toLightVector = lightPosition - worldPosition.xyz;
+
+}
