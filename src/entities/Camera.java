@@ -25,10 +25,16 @@ public class Camera {
 			position.z+=cameraSpeed;
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_D)){
-			position.x-=cameraSpeed;
+			position.x+=cameraSpeed;
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_A)){
-			position.x+=cameraSpeed;
+			position.x-=cameraSpeed;
+		}
+		if(Keyboard.isKeyDown(Keyboard.KEY_Q)) {
+			position.y+=cameraSpeed;
+		}
+		if(Keyboard.isKeyDown(Keyboard.KEY_Z)) {
+			position.y-=cameraSpeed;
 		}
 	}
 
