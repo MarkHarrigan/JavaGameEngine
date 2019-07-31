@@ -26,31 +26,21 @@ public class Terrain {
 		this.model = generateTerrain(loader);
 	}
 	
-	
-	
 	public float getX() {
 		return x;
 	}
-
-
 
 	public float getZ() {
 		return z;
 	}
 
-
-
 	public RawModel getModel() {
 		return model;
 	}
 
-
-
 	public ModelTexture getTexture() {
 		return texture;
 	}
-
-
 
 	private RawModel generateTerrain(Loader loader){
 		int count = VERTEX_COUNT * VERTEX_COUNT;
